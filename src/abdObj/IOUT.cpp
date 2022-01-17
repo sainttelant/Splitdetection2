@@ -212,19 +212,19 @@ std::vector< Track > track_iou(float status_threshold, float lazy_threshold, \
 						track.stationary_count = 0;
 					}
 
-					if (track.stationary_count > 16)
+					if (track.stationary_count > 22)
 					{
 						track.status = Static_Sure;
 					}
 				}
 				else
 				{
-					if (track.first_stationary && iou_score > lazy_threshold-0.15 && iou_score < status_threshold-0.05)
+					if (track.first_stationary && iou_score > lazy_threshold-0.25 && iou_score < status_threshold-0.09)
 					{
 						track.status = Static_Sure;
 						track.stationary_count--;
 					}
-					if (iou_score > status_threshold-0.05)
+					if (iou_score > status_threshold-0.25)
 					{
 						track.first_stationary = true;
 						track.status = Stopping;
@@ -236,7 +236,7 @@ std::vector< Track > track_iou(float status_threshold, float lazy_threshold, \
 						track.stationary_count = 0;
 					}
 
-					if (track.stationary_count > 16)
+					if (track.stationary_count > 15)
 					{
 						track.status = Static_Sure;
 					}

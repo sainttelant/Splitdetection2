@@ -6,6 +6,8 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/photo.hpp>
 #include <opencv2/highgui/highgui_c.h>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/video/background_segm.hpp>
 #include <memory>
 #include <time.h>
 #include <string>
@@ -70,7 +72,7 @@ namespace SplitObjIF
         void work(std::vector<SplitObjIF::SplitObjSender> &senderpin);
 
         bool InitData();
-
+	 //封装一下background abstract~~~
         void Setdata(SplitObjReceiver inferout);
         void Setinnerframecount(unsigned int framecount);
         unsigned int Getinnerframecount();

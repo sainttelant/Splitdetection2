@@ -479,6 +479,10 @@ SplitObjIF::SplitIF::~SplitIF()
 
 };
 
+
+void CVbackgroundsubstract(cv::Mat& colorImg, cv::Mat& bgmask, Ptr<BackgroundSubtractorMOG2> p_backSub);
+void postprogress(cv::Mat& img, cv::Mat& mask);
+
 void SplitObjIF::SplitIF::Setdata(SplitObjReceiver inferout)
 {
 	m_Data.timestamp = inferout.timestamp;
@@ -521,12 +525,6 @@ void SplitObjIF::SplitIF::RunSplitDetect(SplitObjReceiver &datain,std::vector<Sp
 		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
 		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
 		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
-		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
-		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
-		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
-		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
-		printf(">>>>>>>>>>>>>>now, Turn splitobj detection ON!<<<<<<<<<<<<<<<\n");
-		
 		work(dataout);
 	}
 	else
@@ -539,6 +537,254 @@ void SplitObjIF::SplitIF::RunSplitDetect(SplitObjReceiver &datain,std::vector<Sp
 	}
 	
 }
+
+void InitGaussian(uchar* r_ptr, cv::Mat &ROIarea, int &nL, int &nC)
+{
+	for (int i = 0; i < ROIarea.rows; i++)
+	{
+		r_ptr = ROIarea.ptr(i);
+		for (int j = 0; j < ROIarea.cols; j++)
+		{
+
+			N_ptr = Create_Node(*r_ptr, *(r_ptr + 1), *(r_ptr + 2));
+			if (N_ptr != NULL) {
+				N_ptr->pixel_s->weight = 1.0;
+				Insert_End_Node(N_ptr);
+			}
+			else
+			{
+				std::cout << "Memory limit reached... ";
+				//_getch();
+				exit(0);
+			}
+		}
+	}
+	if (ROIarea.isContinuous() == true)
+	{
+		nL = 1;
+		nC = ROIarea.rows * ROIarea.cols * ROIarea.channels();
+	}
+
+	else
+	{
+		nL = ROIarea.rows;
+		nC = ROIarea.cols * ROIarea.channels();
+	}
+
+}
+
+
+void postprogress( cv::Mat& img, Mat& mask)
+{
+
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	cv::bitwise_not(mask, mask);
+	cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(-1, -1));
+	cv::morphologyEx(mask, mask, CV_MOP_CLOSE, kernel);
+	cv::bitwise_not(mask, mask);
+	cv::Mat dilatekernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::dilate(mask, mask, dilatekernel, Point(-1, -1), 1, 0);
+	findContours(mask, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+}
+
+
+void CVbackgroundsubstract(cv::Mat& colorImg, cv::Mat& bgmask, Ptr<BackgroundSubtractorMOG2> p_backSub)
+{
+	p_backSub->apply(colorImg, bgmask,-1);
+	
+	postprogress(colorImg, bgmask);
+}
+
+
+
+void backgroundsubstract(double &sum, double &sum1,bool &close, int &background, \
+	double &rVal, double &gVal, double &bVal, \
+	double &temp_cov, \
+	double &weight, \
+	double &var, \
+	uchar* r_ptr,
+	uchar* b_ptr, \
+	int nL, \
+	int nC, \
+	double mult, \
+	double muR, \
+	double muG, \
+	double muB, \
+	double dR, \
+	double dG, \
+	double dB, \
+	double mal_dist, \
+	cv::Mat& origin, 
+	cv::Mat& binimg)
+{
+	
+		for (int i = 0; i < nL; i++)
+		{
+			r_ptr = origin.ptr(i);
+			// ��ֵ����ͼ��ÿ�����ص�ĵ�ַָ��
+			b_ptr = binimg.ptr(i);
+
+			for (int j = 0; j < nC; j += 3)
+			{
+				sum = 0.0;
+				sum1 = 0.0;
+				close = false;
+				background = 0;
+				rVal = *(r_ptr++);
+				gVal = *(r_ptr++);
+				bVal = *(r_ptr++);
+				start = N_ptr->pixel_s;
+				rear = N_ptr->pixel_r;
+				ptr = start;
+
+				temp_ptr = NULL;
+
+				if (N_ptr->no_of_components > 4)
+				{
+					Delete_gaussian(rear);
+					N_ptr->no_of_components--;
+				}
+
+				for (int k = 0; k < N_ptr->no_of_components; k++)
+				{
+
+
+					weight = ptr->weight;
+					mult = alpha / weight;
+					weight = weight * alpha_bar + prune;
+					if (close == false)
+					{
+						muR = ptr->mean[0];
+						muG = ptr->mean[1];
+						muB = ptr->mean[2];
+
+						dR = rVal - muR;
+						dG = gVal - muG;
+						dB = bVal - muB;
+
+						/*del[0] = value[0]-ptr->mean[0];
+						del[1] = value[1]-ptr->mean[1];
+						del[2] = value[2]-ptr->mean[2];*/
+
+
+						var = ptr->covariance;
+
+						mal_dist = (dR * dR + dG * dG + dB * dB);
+
+						if ((sum < cfbar) && (mal_dist < 16.0 * var * var))
+							// ���������� 
+							background = 255;
+
+						if (mal_dist < 9.0 * var * var)
+						{
+							weight += alpha;
+							//mult = mult < 20.0*alpha ? mult : 20.0*alpha;
+
+							close = true;
+
+							ptr->mean[0] = muR + mult * dR;
+							ptr->mean[1] = muG + mult * dG;
+							ptr->mean[2] = muB + mult * dB;
+							//if( mult < 20.0*alpha)
+							//temp_cov = ptr->covariance*(1+mult*(mal_dist - 1));
+							temp_cov = var + mult * (mal_dist - var);
+							ptr->covariance = temp_cov < 5.0 ? 5.0 : (temp_cov > 20.0 ? 20.0 : temp_cov);
+							temp_ptr = ptr;
+						}
+
+					}
+
+					if (weight < -prune)
+					{
+						ptr = Delete_gaussian(ptr);
+						weight = 0;
+						N_ptr->no_of_components--;
+					}
+					else
+					{
+						//if(ptr->weight > 0)
+						sum += weight;
+						ptr->weight = weight;
+					}
+
+					ptr = ptr->Next;
+				}
+
+
+
+				if (close == false)
+				{
+					ptr = new gaussian;
+					ptr->weight = alpha;
+					ptr->mean[0] = rVal;
+					ptr->mean[1] = gVal;
+					ptr->mean[2] = bVal;
+					ptr->covariance = covariance0;
+					ptr->Next = NULL;
+					ptr->Previous = NULL;
+					//Insert_End_gaussian(ptr);
+					if (start == NULL)
+						// ??
+						start = rear = NULL;
+					else
+					{
+						ptr->Previous = rear;
+						rear->Next = ptr;
+						rear = ptr;
+					}
+					temp_ptr = ptr;
+					N_ptr->no_of_components++;
+				}
+
+				ptr = start;
+				while (ptr != NULL)
+				{
+					ptr->weight /= sum;
+					ptr = ptr->Next;
+				}
+
+				while (temp_ptr != NULL && temp_ptr->Previous != NULL)
+				{
+					if (temp_ptr->weight <= temp_ptr->Previous->weight)
+						break;
+					else
+					{
+						//count++;
+						gnext = temp_ptr->Next;
+						previous = temp_ptr->Previous;
+						if (start == previous)
+							start = temp_ptr;
+						previous->Next = gnext;
+						temp_ptr->Previous = previous->Previous;
+						temp_ptr->Next = previous;
+						if (previous->Previous != NULL)
+							previous->Previous->Next = temp_ptr;
+						if (gnext != NULL)
+							gnext->Previous = previous;
+						else
+							rear = previous;
+						previous->Previous = temp_ptr;
+					}
+
+					temp_ptr = temp_ptr->Previous;
+				}
+
+
+
+				N_ptr->pixel_s = start;
+				N_ptr->pixel_r = rear;
+
+				//if(background == 1)
+				//printf("current bin_image pixel's background %d \n", background);
+				*b_ptr++ = background;
+				//else
+					//bin_img.at<uchar>(i,j) = 0;
+				N_ptr = N_ptr->Next;
+			}
+		}
+}
+
 
 void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpin)
 {
@@ -711,46 +957,28 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 
 	//Step 1: initializing with one gaussian for the first time and keeping the no. of models as 1
 	
-	for (i = 0; i < roiregion.rows; i++)
-	{
-		r_ptr = roiregion.ptr(i);
-		for (j = 0; j < roiregion.cols; j++)
-		{
+	cv::Vec3f val;
+	int nL = 0;
+	int nC = 0;
+	uchar* r_ptr = NULL;
+	uchar* b_ptr = NULL;
 
-			N_ptr = Create_Node(*r_ptr, *(r_ptr + 1), *(r_ptr + 2));
-			if (N_ptr != NULL) {
-				N_ptr->pixel_s->weight = 1.0;
-				Insert_End_Node(N_ptr);
-			}
-			else
-			{
-				std::cout << "Memory limit reached... ";
-				//_getch();
-				exit(0);
-			}
-		}
-	}
+#if UsingTraditionSubstract
+	
+#else
+	//Ptr<BackgroundSubtractorMOG2> bgsubtractor = createBackgroundSubtractorMOG2(200, 45, false);
+	Ptr<BackgroundSubtractorMOG2> bgsubtractor = createBackgroundSubtractorMOG2(400, 20, false);
+#endif	
 
-
-
-	if (roiregion.isContinuous() == true)
-	{
-		nL = 1;
-		nC = roiregion.rows * roiregion.cols * roiregion.channels();
-	}
-
-	else
-	{
-		nL = roiregion.rows;
-		nC = roiregion.cols * roiregion.channels();
-	}
+	InitGaussian(r_ptr, roiregion, nL, nC);
+	
 
 	
 
 	//Step 2: Modelling each pixel with Gaussian
 	duration1 = static_cast<double>(cv::getTickCount());
 	bin_img = cv::Mat(roiregion.rows, roiregion.cols, CV_8UC1, cv::Scalar(0));
-	
+	backgmask = cv::Mat(roiregion.rows, roiregion.cols, CV_8UC3, cv::Scalar(0, 0, 0));
 	std::cout<<"fps: "<<capture.get(cv::CAP_PROP_FPS)<<std::endl;
 	
 	SplitIF::Instance().trigger = true;
@@ -823,170 +1051,20 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 
 		N_ptr = N_start;
 		duration = static_cast<double>(cv::getTickCount());
-		for (i = 0; i < nL; i++)
-		{
-			r_ptr = roiregion.ptr(i);
-			// ��ֵ����ͼ��ÿ�����ص�ĵ�ַָ��?
-			b_ptr = bin_img.ptr(i);
-
-			for (j = 0; j < nC; j += 3)
-			{
-				sum = 0.0;
-				sum1 = 0.0;
-				close = false;
-				background = 0;
-				rVal = *(r_ptr++);
-				gVal = *(r_ptr++);
-				bVal = *(r_ptr++);
-				start = N_ptr->pixel_s;
-				rear = N_ptr->pixel_r;
-				ptr = start;
-
-				temp_ptr = NULL;
-
-				if (N_ptr->no_of_components > 4)
-				{
-					Delete_gaussian(rear);
-					N_ptr->no_of_components--;
-				}
-
-				for (k = 0; k < N_ptr->no_of_components; k++)
-				{
 
 
-					weight = ptr->weight;
-					mult = alpha / weight;
-					weight = weight * alpha_bar + prune;
-					if (close == false)
-					{
-						muR = ptr->mean[0];
-						muG = ptr->mean[1];
-						muB = ptr->mean[2];
+#if UsingTraditionSubstract
+		// using traditional functions to do back substract
+		backgroundsubstract(sum, sum1, close, background, rVal, \
+			gVal, bVal, temp_cov, weight, var, r_ptr, b_ptr, \
+			nL, nC, mult, muR, muG, muB, dR, dG, dB, mal_dist,roiregion,bin_img);
+#else
 
-						dR = rVal - muR;
-						dG = gVal - muG;
-						dB = bVal - muB;
-
-						/*del[0] = value[0]-ptr->mean[0];
-						del[1] = value[1]-ptr->mean[1];
-						del[2] = value[2]-ptr->mean[2];*/
-
-
-						var = ptr->covariance;
-
-						mal_dist = (dR * dR + dG * dG + dB * dB);
-
-						if ((sum < cfbar) && (mal_dist < 16.0 * var * var))
-							// ���������� 
-							background = 255;
-
-						if (mal_dist < 9.0 * var * var)
-						{
-							weight += alpha;
-							//mult = mult < 20.0*alpha ? mult : 20.0*alpha;
-
-							close = true;
-
-							ptr->mean[0] = muR + mult * dR;
-							ptr->mean[1] = muG + mult * dG;
-							ptr->mean[2] = muB + mult * dB;
-							//if( mult < 20.0*alpha)
-							//temp_cov = ptr->covariance*(1+mult*(mal_dist - 1));
-							temp_cov = var + mult * (mal_dist - var);
-							ptr->covariance = temp_cov < 5.0 ? 5.0 : (temp_cov > 20.0 ? 20.0 : temp_cov);
-							temp_ptr = ptr;
-						}
-
-					}
-
-					if (weight < -prune)
-					{
-						ptr = Delete_gaussian(ptr);
-						weight = 0;
-						N_ptr->no_of_components--;
-					}
-					else
-					{
-						//if(ptr->weight > 0)
-						sum += weight;
-						ptr->weight = weight;
-					}
-
-					ptr = ptr->Next;
-				}
-
-
-
-				if (close == false)
-				{
-					ptr = new gaussian;
-					ptr->weight = alpha;
-					ptr->mean[0] = rVal;
-					ptr->mean[1] = gVal;
-					ptr->mean[2] = bVal;
-					ptr->covariance = covariance0;
-					ptr->Next = NULL;
-					ptr->Previous = NULL;
-					//Insert_End_gaussian(ptr);
-					if (start == NULL)
-						// ??
-						start = rear = NULL;
-					else
-					{
-						ptr->Previous = rear;
-						rear->Next = ptr;
-						rear = ptr;
-					}
-					temp_ptr = ptr;
-					N_ptr->no_of_components++;
-				}
-
-				ptr = start;
-				while (ptr != NULL)
-				{
-					ptr->weight /= sum;
-					ptr = ptr->Next;
-				}
-
-				while (temp_ptr != NULL && temp_ptr->Previous != NULL)
-				{
-					if (temp_ptr->weight <= temp_ptr->Previous->weight)
-						break;
-					else
-					{
-						//count++;
-						gnext = temp_ptr->Next;
-						previous = temp_ptr->Previous;
-						if (start == previous)
-							start = temp_ptr;
-						previous->Next = gnext;
-						temp_ptr->Previous = previous->Previous;
-						temp_ptr->Next = previous;
-						if (previous->Previous != NULL)
-							previous->Previous->Next = temp_ptr;
-						if (gnext != NULL)
-							gnext->Previous = previous;
-						else
-							rear = previous;
-						previous->Previous = temp_ptr;
-					}
-
-					temp_ptr = temp_ptr->Previous;
-				}
-
-
-
-				N_ptr->pixel_s = start;
-				N_ptr->pixel_r = rear;
-
-				//if(background == 1)
-				//printf("current bin_image pixel's background %d \n", background);
-				*b_ptr++ = background;
-				//else
-					//bin_img.at<uchar>(i,j) = 0;
-				N_ptr = N_ptr->Next;
-			}
-		}
+		//using opencv to do back ground sub
+		CVbackgroundsubstract(roiregion, bin_img, bgsubtractor);
+#endif
+		
+	
 
 #if DISPLAY
 		imshow("before xingtai", bin_img);
@@ -997,18 +1075,14 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 	if (openvxframe > 20)
 		{
 		//step one, filter tiny points
-		//RemoveSmallRegion(bin_img, bin_img, 20, 0, 0);	
-		
-		// ��Ч��֤��ֵ�˲��ͱղ����Լ۱���ߣ�ҲЧ���Ϻá�?
-		// ��ֵ�˲�
-		//cv::medianBlur(bin_img, bin_img, 3);
-
 		//  using openvx to substitute for opencv morphology operation(first dilate and then erode!) 
 
-		// �������?
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarcy;
 
+
+
+#if UsingTraditionSubstract
 #if UsingOpenvx
 		// try to map memory, not copy
      	
@@ -1042,12 +1116,15 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 		vxReleaseImage(&vx_Mat1);
 		
 #else
+
 		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3), cv::Point(-1, -1));
 		cv::morphologyEx(bin_img, bin_img, CV_MOP_CLOSE, kernel);
 		cv::bitwise_not(bin_img, bin_img);
 		cv::Mat dilatekernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(7, 7));
 		cv::dilate(bin_img, bin_img, dilatekernel, Point(-1, -1), 1, 0);
 #endif 
+#endif
+
 
 #if DISPLAY
 		cv::namedWindow("after xingtai", WINDOW_NORMAL);
@@ -1126,12 +1203,13 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 				{
 					iters_b->x = iters_b->x - roi.x;
 					iters_b->y = iters_b->y - roi.y;
-					
+					cv::putText(drawingorig, "NetWork", cv::Point((int)iters_b->x, (int)iters_b->y- 10), \
+					0,0.5,cv::Scalar(0,255,0),1,8);
 					rectangle(drawingorig,
-						Point((int)iters_b->x-roi.x,
-							(int)iters_b->y-roi.y),
-						Point((int)iters_b->x + (int)iters_b->width-roi.x,
-							(int)iters_b->y + (int)iters_b->height-roi.y),
+						Point((int)iters_b->x,
+							(int)iters_b->y),
+						Point((int)iters_b->x + (int)iters_b->width,
+							(int)iters_b->y + (int)iters_b->height),
 						Scalar(0, 0, 255),
 						2,
 						8);
@@ -1306,6 +1384,19 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 					tmpSplitObj.m_postion.y = static_cast<int>(b.y);
 					tmpSplitObj.m_postion.width = static_cast<int>(b.width);
 					tmpSplitObj.m_postion.height = static_cast<int>(b.height);
+
+					if (tmpSplitObj.m_postion.x < 0 || \
+						tmpSplitObj.m_postion.y <0 || \
+						tmpSplitObj.m_postion.width<0 || \
+						tmpSplitObj.m_postion.height<0)
+					{
+						break;
+					}
+					tmpSplitObj.origlayout.x = (tmpSplitObj.m_postion.x + (int)roi.x)* (float)2560/(float)RESIZE_WIDTH;
+					tmpSplitObj.origlayout.y = (tmpSplitObj.m_postion.y + (int)roi.y) * (float)1440 / (float)RESIZE_HEIGHT;
+					tmpSplitObj.origlayout.width = tmpSplitObj.m_postion.width* (float)2560 / (float)RESIZE_WIDTH;
+					tmpSplitObj.origlayout.height = tmpSplitObj.m_postion.height* (float)1440 / (float)RESIZE_HEIGHT;
+					cv::putText(realoriginimg, info, cv::Point((tmpSplitObj.origlayout.x + tmpSplitObj.origlayout.width - tmpSplitObj.origlayout.width / 2) - 30, tmpSplitObj.origlayout.y + tmpSplitObj.origlayout.height - 5), 1, 3, red, 1);
 					tmpSplitObj.moved = false;
 					tmpSplitObj.firstshowframenum = count4tracker;
 #if UsingOpenvx
@@ -1314,10 +1405,18 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 					{
 						continue;
 					}
-#endif 					
-					tmpSplitObj.imgdata = roiregion(tmpSplitObj.m_postion);
-					tmpSplitObj.haschecked = false;
-					tmpSplitObj.checktimes = 1;
+#endif 				
+					if (tmpSplitObj.m_postion.area()> roiregion.cols* roiregion.rows)
+					{
+						break;
+					}
+					else
+					{
+						tmpSplitObj.imgdata = roiregion(tmpSplitObj.m_postion);
+						tmpSplitObj.haschecked = false;
+						tmpSplitObj.checktimes = 1;
+					}
+		
 					// copy a result to senderpin
 #if RTSP
 					SenderResults.m_gps.latititude = 0;

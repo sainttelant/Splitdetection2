@@ -13,6 +13,8 @@
 #define RESIZE_HEIGHT 720
 #define CHECK_INTERVAL 10
 
+#define UsingTraditionSubstract 0
+
 // define use video or rtsp
 #define LowVersionOpencv 1
 #define UsingOpenvx 1
@@ -810,7 +812,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 	int nL, nC;
 
 	cv::Mat orig_img,drawingorig, bin_img, vxMat,vxMat1;
-
+	cv::Mat backgmask;
 	
 	vx_context context =vxCreateContext();
 	vx_matrix vxmatrix = 0;
@@ -967,7 +969,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 	
 #else
 	//Ptr<BackgroundSubtractorMOG2> bgsubtractor = createBackgroundSubtractorMOG2(200, 45, false);
-	Ptr<BackgroundSubtractorMOG2> bgsubtractor = createBackgroundSubtractorMOG2(400, 20, false);
+	bgsubtractor = createBackgroundSubtractorMOG2(400, 20, false);
 #endif	
 
 	InitGaussian(r_ptr, roiregion, nL, nC);
@@ -1396,7 +1398,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 					tmpSplitObj.origlayout.y = (tmpSplitObj.m_postion.y + (int)roi.y) * (float)1440 / (float)RESIZE_HEIGHT;
 					tmpSplitObj.origlayout.width = tmpSplitObj.m_postion.width* (float)2560 / (float)RESIZE_WIDTH;
 					tmpSplitObj.origlayout.height = tmpSplitObj.m_postion.height* (float)1440 / (float)RESIZE_HEIGHT;
-					cv::putText(realoriginimg, info, cv::Point((tmpSplitObj.origlayout.x + tmpSplitObj.origlayout.width - tmpSplitObj.origlayout.width / 2) - 30, tmpSplitObj.origlayout.y + tmpSplitObj.origlayout.height - 5), 1, 3, red, 1);
+					//cv::putText(realoriginimg, info, cv::Point((tmpSplitObj.origlayout.x + tmpSplitObj.origlayout.width - tmpSplitObj.origlayout.width / 2) - 30, tmpSplitObj.origlayout.y + tmpSplitObj.origlayout.height - 5), 1, 3, red, 1);
 					tmpSplitObj.moved = false;
 					tmpSplitObj.firstshowframenum = count4tracker;
 #if UsingOpenvx

@@ -50,9 +50,7 @@ namespace SplitObjIF
        unsigned int framenum;
        long timestamp;
        cv::Mat imageData;
-       // 安全起见拷贝一次从inferout，等号操作深拷贝一次
        std::vector<cv::Rect> v_inferout;
-        /* data */
     };
 
 
@@ -98,6 +96,8 @@ namespace SplitObjIF
         float sigma_h;		// high detection threshold
         float sigma_iou;	// IOU threshold
         float t_min;		// minimum track length in frames
+        Ptr<BackgroundSubtractorMOG2> bgsubtractor;
+
 
         
     };

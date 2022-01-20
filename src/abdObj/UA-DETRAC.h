@@ -27,7 +27,7 @@ void read_detections(std::ifstream& file, std::vector< std::vector<BoundingBox> 
 	for (CSVIterator loop(file); loop != CSVIterator(); ++loop)
 	{
 		int det_frame = std::stoi((*loop)[0]);
-		//std::cout << "Detected in Frame N " << det_frame << "\n";
+		//std::Ucitcout << "Detected in Frame N " << det_frame << "\n";
 		while (actualFrame < det_frame) // We read all detections for previous frame
 		{
 			actualFrame++;
@@ -57,7 +57,7 @@ std::string to_string_with_precision(float value)
 	return out.str();
 }
 
-//  Ã¿Ö¡Ð´Èë½á¹ûµ½txt
+//  Ã¿Ö¡Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½txt
 bool write2file(std::ofstream &filetxt,unsigned int &framenum, \
 	std::vector<std::tuple<cv::Rect, float, int>>& results)
 {
@@ -68,7 +68,7 @@ bool write2file(std::ofstream &filetxt,unsigned int &framenum, \
 	}
 	else
 	{
-		// Ð´¸öautoµÄ·½·¨
+		// Ð´ï¿½ï¿½autoï¿½Ä·ï¿½ï¿½ï¿½
 		for (const auto& data : results)
 		{
 			cv::Rect box;
@@ -98,10 +98,10 @@ void write_results(std::string& sequence, std::string& output_folder, int total_
 	std::ofstream out(filename);
 	std::string line;
 
-	std::cout << "Creating result file" << std::endl;
+	std::Ucitcout << "Creating result file" << std::endl;
 	for (auto t : tracks)
 	{
-//		std::cout << "Track " << t.id << " ~ started in frame -> " << t.start_frame  << std::endl;
+//		std::Ucitcout << "Track " << t.id << " ~ started in frame -> " << t.start_frame  << std::endl;
 		for (auto b : t.boxes)
 		{
 			line.append(to_string_with_precision(b.x) + ",");
@@ -116,7 +116,7 @@ void write_results(std::string& sequence, std::string& output_folder, int total_
 			line.clear();
 		}
 	}
-	std::cout << "Finish writing result file" << std::endl;
+	std::Ucitcout << "Finish writing result file" << std::endl;
 	// Close the file
 	out.close();
 

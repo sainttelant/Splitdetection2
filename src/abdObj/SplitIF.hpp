@@ -14,6 +14,15 @@
 #include "IOUT.h"
 #include "ImageAnalysis.hpp"
 
+
+
+#define TRACE
+#ifndef TRACE
+ #define Ucitcout 0 && cout//或者NULL && Ucitcout
+#else
+ #define Ucitcout cout
+
+
 namespace SplitObjIF
 {
 
@@ -96,10 +105,7 @@ namespace SplitObjIF
         float sigma_h;		// high detection threshold
         float sigma_iou;	// IOU threshold
         float t_min;		// minimum track length in frames
-        Ptr<BackgroundSubtractorMOG2> bgsubtractor;
-
-
-        
+        Ptr<cv::cuda::BackgroundSubtractorMOG2> bgsubtractor; 
     };
     
     

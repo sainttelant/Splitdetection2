@@ -92,12 +92,12 @@ namespace xueweiImage
 
 			if (similarityValue >= 0.6)
 			{
-				std::cout << "not be moved out"<<"\n"<< std::endl;
+				std::Ucitcout << "not be moved out"<<"\n"<< std::endl;
 				return false;
 			}
 			if (similarityValue<0)
 			{
-				std::cout << "even though it is not possible, return false" << "\n" << std::endl;
+				std::Ucitcout << "even though it is not possible, return false" << "\n" << std::endl;
 				return false;
 			}
 
@@ -152,16 +152,16 @@ namespace xueweiImage
 				if (arr1[i] != arr2[i])
 					++iDiffNum;
 
-			cout << "iDiffNum = " << iDiffNum << endl;
+			Ucitcout << "iDiffNum = " << iDiffNum << endl;
 
 			if (iDiffNum > 10)
 			{
-				cout << "Be moved out" << endl;
+				Ucitcout << "Be moved out" << endl;
 				return true;
 			}
 			else
 			{
-				cout << "not be moved out" << endl;
+				Ucitcout << "not be moved out" << endl;
 				return false;
 			}
 

@@ -8,6 +8,7 @@
 #include <opencv2/highgui.hpp>
 #include <NVX/nvx.h>
 #include <NVX/nvx_opencv_interop.hpp>
+#include "log.h"
 
 using namespace std;
 using namespace cv;

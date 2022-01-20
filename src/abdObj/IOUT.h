@@ -9,6 +9,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include "log.h"
 
 /******************************************************************************
 * STRUCTS
@@ -51,7 +52,7 @@ struct Track
 	std::vector<BoundingBox> boxes;
 	float max_score;
 	int start_frame;
-	int id; // Õâ¸öÊÇ×·×ÙµÄid
+	int id; // ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½Ùµï¿½id
 	int total_appearing;
 	int stationary_count;
 	TrackStatus status;

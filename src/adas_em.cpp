@@ -123,9 +123,9 @@ void adas::sendAbdObjRect()
 	
 	abdObjRectNs::Rect rect_temp;
 	abdObjRectNs::AbdObjRect AbdObjRectData;
-
-	#if 0
+	AbdObjRectData.Bbox.clear();
 	AbdObjRectInfo AbdObjOut;
+	#if 0
 	Rect    myRect;
 	myRect.top = 400;
 	myRect.left = 200;
@@ -176,7 +176,7 @@ int adas::capture1Thrd()
 	std::string uri = "rtsp://admin:Ucit2021@10.203.204.198:554/h264/ch1/main/av_stream";
 	sprintf(rtsp, "rtspsrc location=%s latency=%s ! rtph264depay ! h264parse ! omxh264dec ! nvvidconv ! video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! videoconvert ! appsink 		sync=false",uri.c_str(),rtsp_latency.c_str(),image_width,image_height);
 		// åµå¥åŒè¿è¡äžæåïŒéèŠçœç»æåµè¯ï¿?
-	if (!capture.open(rtsp))
+	if (!capture.open(uri))
 	{
 		Ucitcout << "it can not open rtsp!!!!" << std::endl;
 		//return -1 ;
@@ -227,16 +227,13 @@ int adas::process1Thrd()
 		mux_cap.lock();
 		//img = frame.clone();
 		datain.imageData = frame.clone();
+		mux_cap.unlock();
+	
+		mux_infer.lock();
+		// interBbox is only used for SplitIF, so change it with move construct
 		datain.v_inferout = std::move(inferBbox);
 		datain.timestamp = infer_timestamp;
-		
-		mux_cap.unlock();
-		
-	
-		//mux_infer.lock();
-		// interBbox is only used for SplitIF, so change it with move construct
-		//datain.v_inferout = std::move(inferBbox);
-		//mux_infer.unlock();
+		mux_infer.unlock();
 		
 		
 		//cv::waitKey(5);

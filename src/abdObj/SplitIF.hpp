@@ -8,6 +8,7 @@
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/video/background_segm.hpp>
+//#include <opencv2/cudabgsegm.hpp>
 #include <memory>
 #include <time.h>
 #include <string>
@@ -16,12 +17,6 @@
 
 
 
-#define TRACE
-#ifndef TRACE
- #define Ucitcout 0 && std::cout//或者NULL && Ucitcout
-#else
- #define Ucitcout std::cout
-#endif
 
 namespace SplitObjIF
 {
@@ -105,7 +100,8 @@ namespace SplitObjIF
         float sigma_h;		// high detection threshold
         float sigma_iou;	// IOU threshold
         float t_min;		// minimum track length in frames
-        Ptr<cv::cuda::BackgroundSubtractorMOG2> bgsubtractor; 
+        //Ptr<cv::cuda::BackgroundSubtractorMOG2> bgsubtractor; 
+        Ptr<BackgroundSubtractorMOG2> bgsubtractor; 
     };
     
     

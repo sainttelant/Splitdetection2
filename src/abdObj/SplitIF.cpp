@@ -482,7 +482,7 @@ SplitObjIF::SplitIF::~SplitIF()
 };
 
 
-void CVbackgroundsubstract(cv::Mat& colorImg, cv::Mat& bgmask, Ptr<cv::cuda::BackgroundSubtractorMOG2> p_backSub);
+void CVbackgroundsubstract(cv::Mat& colorImg, cv::Mat& bgmask, Ptr<BackgroundSubtractorMOG2> p_backSub);
 void postprogress(cv::Mat& img, cv::Mat& mask);
 
 void SplitObjIF::SplitIF::Setdata(SplitObjReceiver inferout)
@@ -591,7 +591,7 @@ void postprogress( cv::Mat& img, Mat& mask)
 }
 
 
-void CVbackgroundsubstract(cv::Mat& colorImg, cv::Mat& bgmask, Ptr<cv::cuda::BackgroundSubtractorMOG2> p_backSub)
+void CVbackgroundsubstract(cv::Mat& colorImg, cv::Mat& bgmask, Ptr<BackgroundSubtractorMOG2> p_backSub)
 {
 	p_backSub->apply(colorImg, bgmask,-1);
 	
@@ -969,7 +969,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 	
 #else
 	//Ptr<BackgroundSubtractorMOG2> bgsubtractor = createBackgroundSubtractorMOG2(200, 45, false);
-	bgsubtractor = cv::cuda::createBackgroundSubtractorMOG2(400, 20, false);
+	bgsubtractor = createBackgroundSubtractorMOG2(400, 20, false);
 #endif	
 
 	InitGaussian(r_ptr, roiregion, nL, nC);
@@ -1148,12 +1148,14 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 #else
 	#if RTSP		
 	BoundingBox tempbb;
+	float scalex = (float)2560/960;
+	float scaley = 2.0f;
 	for(int i=0; i<inferData.v_inferout.size();i++ )
 	{
-		tempbb.x = static_cast<float>(inferData.v_inferout[i].x);
-		tempbb.y = static_cast<float>(inferData.v_inferout[i].y);
-		tempbb.width = static_cast<float>(inferData.v_inferout[i].width);
-		tempbb.height = static_cast<float>(inferData.v_inferout[i].height);
+		tempbb.x = static_cast<float>(inferData.v_inferout[i].x)/scalex;
+		tempbb.y = static_cast<float>(inferData.v_inferout[i].y)/scaley;
+		tempbb.width = static_cast<float>(inferData.v_inferout[i].width)/scalex;
+		tempbb.height = static_cast<float>(inferData.v_inferout[i].height)/scaley;
 		tempbb.score = 1;
 		tempbb.m_status = UnkownObj;
 		yolov5_currentobj.push_back(tempbb);
@@ -1180,7 +1182,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 
 		//  ��ȡ��ǰ���������̽����?
 		std::vector<Point2d> yolov5Points;
-		Ucitcout << "begin to draw yolov5 detections'results!!" << std::endl;
+		Ucitcout << "begin to draw detected objs:"<<yolov5_currentobj.size() << std::endl;
 		for (std::vector<BoundingBox>::iterator iters_b = yolov5_currentobj.begin();iters_b< yolov5_currentobj.end();)
 		{
 				yolov5Points.clear();
@@ -1197,7 +1199,10 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 				yolov5Points.push_back(topright);
 				yolov5Points.push_back(bottomright);
 				yolov5Points.push_back(bottomleft);
+				Ucitcout<<"There are"<<"\t"<< yolov5Points.size()<<"\t"<<"receive from inferout"<<endl;
 				bool insideornot = judgeInorNot(yolov5Points, regions);
+
+
 				if (insideornot)
 				{
 					iters_b->x = iters_b->x - roi.x;
@@ -1221,7 +1226,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 
 		}
 		
-		printf("contours'size:%d \n",contours.size());
+	
 		for (int i=0; i < contours.size();i++)
 		{
 			box[i] = minAreaRect(Mat(contours[i]));

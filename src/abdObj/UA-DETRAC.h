@@ -27,7 +27,7 @@ void read_detections(std::ifstream& file, std::vector< std::vector<BoundingBox> 
 	for (CSVIterator loop(file); loop != CSVIterator(); ++loop)
 	{
 		int det_frame = std::stoi((*loop)[0]);
-		//std::Ucitcout << "Detected in Frame N " << det_frame << "\n";
+		//Ucitcout << "Detected in Frame N " << det_frame << "\n";
 		while (actualFrame < det_frame) // We read all detections for previous frame
 		{
 			actualFrame++;
@@ -98,10 +98,10 @@ void write_results(std::string& sequence, std::string& output_folder, int total_
 	std::ofstream out(filename);
 	std::string line;
 
-	std::Ucitcout << "Creating result file" << std::endl;
+	Ucitcout << "Creating result file" << std::endl;
 	for (auto t : tracks)
 	{
-//		std::Ucitcout << "Track " << t.id << " ~ started in frame -> " << t.start_frame  << std::endl;
+//		Ucitcout << "Track " << t.id << " ~ started in frame -> " << t.start_frame  << std::endl;
 		for (auto b : t.boxes)
 		{
 			line.append(to_string_with_precision(b.x) + ",");
@@ -116,7 +116,7 @@ void write_results(std::string& sequence, std::string& output_folder, int total_
 			line.clear();
 		}
 	}
-	std::Ucitcout << "Finish writing result file" << std::endl;
+	Ucitcout << "Finish writing result file" << std::endl;
 	// Close the file
 	out.close();
 

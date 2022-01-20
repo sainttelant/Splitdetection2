@@ -178,7 +178,7 @@ int adas::capture1Thrd()
 		// åµå¥åŒè¿è¡äžæåïŒéèŠçœç»æåµè¯ï¿?
 	if (!capture.open(rtsp))
 	{
-		std::Ucitcout << "it can not open rtsp!!!!" << std::endl;
+		Ucitcout << "it can not open rtsp!!!!" << std::endl;
 		//return -1 ;
 	}	
 

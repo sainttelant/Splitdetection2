@@ -18,10 +18,10 @@
 
 #define TRACE
 #ifndef TRACE
- #define Ucitcout 0 && cout//或者NULL && Ucitcout
+ #define Ucitcout 0 && std::cout//或者NULL && Ucitcout
 #else
- #define Ucitcout cout
-
+ #define Ucitcout std::cout
+#endif
 
 namespace SplitObjIF
 {

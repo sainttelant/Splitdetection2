@@ -56,7 +56,7 @@ std::vector<LeftObjects> smalltrack(float status_threshold,
 	float t_min, 
 	std::vector<std::vector<cv::Rect>>& detections)
 {
-	std::Ucitcout << "track_iou function" << std::endl;
+	Ucitcout << "track_iou function" << std::endl;
 	std::vector<LeftObjects> active_tracks;
 	std::vector<LeftObjects> finished_tracks;
 
@@ -68,7 +68,7 @@ std::vector<LeftObjects> smalltrack(float status_threshold,
 
 
 
-	std::Ucitcout << "Num of frames > " << numFrames << std::endl;
+	Ucitcout << "Num of frames > " << numFrames << std::endl;
 
 	// ������֡��̽��Ŀ�꼯��
 	for (frame; frame < numFrames; frame++)
@@ -134,7 +134,7 @@ std::vector<LeftObjects> smalltrack(float status_threshold,
 			LeftObjects t = { b,0,Suspected,0,true};
 			active_tracks.push_back(t);
 		}
-		//		std::Ucitcout << "I tracked frame " << frame << std::endl;
+		//		Ucitcout << "I tracked frame " << frame << std::endl;
 	} // End of frames
 
 	/// Finish the remaining tracks
@@ -152,7 +152,7 @@ std::vector<LeftObjects> smalltrack(float status_threshold,
 		finished_tracks[i].m_ID = track_id;
 		track_id++;
 	}
-	std::Ucitcout << "Num of finished tracks > " << finished_tracks.size() << std::endl;
+	Ucitcout << "Num of finished tracks > " << finished_tracks.size() << std::endl;
 	return finished_tracks;
 }
 
@@ -160,7 +160,7 @@ std::vector< Track > track_iou(float status_threshold, float lazy_threshold, \
 	float sigma_h, float sigma_iou, float t_min, \
 	std::vector< std::vector<BoundingBox> > &detections)
 {
-	std::Ucitcout << "track_iou function" << std::endl;
+	Ucitcout << "track_iou function" << std::endl;
 	std::vector<Track> active_tracks;
 	std::vector<Track> finished_tracks;
 	int frame = 0;
@@ -168,7 +168,7 @@ std::vector< Track > track_iou(float status_threshold, float lazy_threshold, \
 	int index;		// Index of the box with the highest IOU
 	bool updated;	// Whether if a track was updated or not
 	int numFrames = detections.size();
-	std::Ucitcout << "Num of frames > " << numFrames << std::endl;
+	Ucitcout << "Num of frames > " << numFrames << std::endl;
 
 	// ������֡��̽��Ŀ�꼯��
 	for (frame; frame < numFrames; frame++)
@@ -280,7 +280,7 @@ std::vector< Track > track_iou(float status_threshold, float lazy_threshold, \
 			Track t = { b, box.score, frame, 0,0,0,Unkown,false,0};
 			active_tracks.push_back(t);
 		}
-//		std::Ucitcout << "I tracked frame " << frame << std::endl;
+//		Ucitcout << "I tracked frame " << frame << std::endl;
 	} // End of frames
 	
 	/// Finish the remaining tracks
@@ -293,7 +293,7 @@ std::vector< Track > track_iou(float status_threshold, float lazy_threshold, \
 		}
 		
 			
-		std::Ucitcout << "Num of finished tracks > " << finished_tracks.size() << std::endl;
+		Ucitcout << "Num of finished tracks > " << finished_tracks.size() << std::endl;
 	}
 		
 	/// Enumerate only the remaining tracks aka the ones finished

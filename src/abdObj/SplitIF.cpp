@@ -210,7 +210,7 @@ gaussian* Delete_gaussian(gaussian* nptr)
 	}
 	else
 	{
-		std::Ucitcout << "Underflow........";
+		Ucitcout << "Underflow........";
 		//_getch();
 		exit(0);
 	}
@@ -276,7 +276,7 @@ void RemoveSmallRegion(Mat& Src, Mat& Dst, int AreaLimit, int CheckMode, int Nei
 
 	if (CheckMode == 1)
 	{
-		std::Ucitcout << "Mode: ȥ��С����. ";
+		Ucitcout << "Mode: ȥ��С����. ";
 		for (int i = 0; i < Src.rows; ++i)
 		{
 			uchar* iData = Src.ptr<uchar>(i);
@@ -292,7 +292,7 @@ void RemoveSmallRegion(Mat& Src, Mat& Dst, int AreaLimit, int CheckMode, int Nei
 	}
 	else
 	{
-		std::Ucitcout << "Mode: ȥ���׶�. ";
+		Ucitcout << "Mode: ȥ���׶�. ";
 		for (int i = 0; i < Src.rows; ++i)
 		{
 			uchar* iData = Src.ptr<uchar>(i);
@@ -314,13 +314,13 @@ void RemoveSmallRegion(Mat& Src, Mat& Dst, int AreaLimit, int CheckMode, int Nei
 	NeihborPos.push_back(Point2i(0, 1));
 	if (NeihborMode == 1)
 	{
-		std::Ucitcout << "Neighbor mode: 8����." << std::endl;
+		Ucitcout << "Neighbor mode: 8����." << std::endl;
 		NeihborPos.push_back(Point2i(-1, -1));
 		NeihborPos.push_back(Point2i(-1, 1));
 		NeihborPos.push_back(Point2i(1, -1));
 		NeihborPos.push_back(Point2i(1, 1));
 	}
-	else std::Ucitcout << "Neighbor mode: 4����." << std::endl;
+	else Ucitcout << "Neighbor mode: 4����." << std::endl;
 	int NeihborCount = 4 + 4 * NeihborMode;
 	int CurrX = 0, CurrY = 0;
 	//��ʼ���? 
@@ -389,7 +389,7 @@ void RemoveSmallRegion(Mat& Src, Mat& Dst, int AreaLimit, int CheckMode, int Nei
 		}
 	}
 
-	std::Ucitcout << RemoveCount << " objects removed." << std::endl;
+	Ucitcout << RemoveCount << " objects removed." << std::endl;
 }
 
 //��ֵ�˲�
@@ -555,7 +555,7 @@ void InitGaussian(uchar* r_ptr, cv::Mat &ROIarea, int &nL, int &nC)
 			}
 			else
 			{
-				std::Ucitcout << "Memory limit reached... ";
+				Ucitcout << "Memory limit reached... ";
 				//_getch();
 				exit(0);
 			}
@@ -884,7 +884,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 		// 嵌入式运行不成功，需要网络情况良�?
 		if (!capture.open(rtsp))
 	{
-		std::Ucitcout << "it can not open rtsp!!!!" << std::endl;
+		Ucitcout << "it can not open rtsp!!!!" << std::endl;
 		return;
 	}	
 
@@ -978,7 +978,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 	duration1 = static_cast<double>(cv::getTickCount());
 	bin_img = cv::Mat(roiregion.rows, roiregion.cols, CV_8UC1, cv::Scalar(0));
 	backgmask = cv::Mat(roiregion.rows, roiregion.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-	std::Ucitcout<<"fps: "<<capture.get(cv::CAP_PROP_FPS)<<std::endl;
+	Ucitcout<<"fps: "<<capture.get(cv::CAP_PROP_FPS)<<std::endl;
 	
 	SplitIF::Instance().trigger = true;
 
@@ -992,12 +992,12 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 	// load class names from dataset for visualization
 	std::vector<std::string> class_names = LoadNames("../weights/coco.names");
 	if (class_names.empty()) {
-		std::Ucitcout << "load className failed!" << std::endl;
+		Ucitcout << "load className failed!" << std::endl;
 		return -1;
 	}
 	else
 	{
-		std::Ucitcout << "load className success!" << std::endl;
+		Ucitcout << "load className success!" << std::endl;
 	}
 	// load network
 	std::string weights = "../weights/yolov5s.torchscript.pt";
@@ -1180,7 +1180,7 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 
 		//  ��ȡ��ǰ���������̽����?
 		std::vector<Point2d> yolov5Points;
-		std::Ucitcout << "begin to draw yolov5 detections'results!!" << std::endl;
+		Ucitcout << "begin to draw yolov5 detections'results!!" << std::endl;
 		for (std::vector<BoundingBox>::iterator iters_b = yolov5_currentobj.begin();iters_b< yolov5_currentobj.end();)
 		{
 				yolov5Points.clear();
@@ -1333,10 +1333,10 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 		{
 			//begin to iou track
 			iou_tracks = track_iou(stationary_threshold, lazy_threshold,sigma_h, sigma_iou, t_min, vv_detections);
-			std::Ucitcout << "tracks'size" << iou_tracks.size() << std::endl;
-			//std::Ucitcout << "Last Track ID > " << iou_tracks.back().id << std::endl;
+			Ucitcout << "tracks'size" << iou_tracks.size() << std::endl;
+			//Ucitcout << "Last Track ID > " << iou_tracks.back().id << std::endl;
 		}
-		std::Ucitcout << "this is" << count4tracker << "frame" << std::endl;
+		Ucitcout << "this is" << count4tracker << "frame" << std::endl;
 
 		
 
@@ -1685,9 +1685,9 @@ void SplitObjIF::SplitIF::work(std::vector<SplitObjIF::SplitObjSender> &senderpi
 		openvxframe++;
 		duration = static_cast<double>(cv::getTickCount()) - duration3;
 		duration /= cv::getTickFrequency();
-		std::Ucitcout << "\n per frame duration :" << duration;
-		std::Ucitcout << "\n per frame duration :" << duration;
-		std::Ucitcout << "\n per frame duration :" << duration;
+		Ucitcout << "\n per frame duration :" << duration;
+		Ucitcout << "\n per frame duration :" << duration;
+		Ucitcout << "\n per frame duration :" << duration;
 
 		cv::namedWindow("orig", WINDOW_NORMAL);
 		cv::imshow("orig", drawingorig);

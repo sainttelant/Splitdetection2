@@ -92,12 +92,12 @@ namespace xueweiImage
 
 			if (similarityValue >= 0.6)
 			{
-				std::Ucitcout << "not be moved out"<<"\n"<< std::endl;
+				Ucitcout << "not be moved out"<<"\n"<< std::endl;
 				return false;
 			}
 			if (similarityValue<0)
 			{
-				std::Ucitcout << "even though it is not possible, return false" << "\n" << std::endl;
+				Ucitcout << "even though it is not possible, return false" << "\n" << std::endl;
 				return false;
 			}
 
